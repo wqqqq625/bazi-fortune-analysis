@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bazi Analysis Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(75, 0, 130, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(30, 30, 50, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+        }
+
+        .header-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .user-info {
+            color: #8a2be2;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .back-btn,
+        .login-btn,
+        .logout-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .back-btn:hover,
+        .login-btn:hover,
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6);
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            padding: 25px;
+            background: rgba(30, 30, 50, 0.95);
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-item strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .result-content {
+            color: #e0e0e0;
+            line-height: 2;
+            font-size: 16px;
+        }
+
+        /* 不同板块的颜色 */
+        .result-section-1 {
+            border-left-color: #3498db;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.15) 0%, rgba(30, 30, 50, 0.95) 100%);
+        }
+
+        .result-section-2 {
+            border-left-color: #e74c3c;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, rgba(30, 30, 50, 0.95) 100%);
+        }
+
+        .result-section-3 {
+            border-left-color: #2ecc71;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, rgba(30, 30, 50, 0.95) 100%);
+        }
+
+        .result-section-4 {
+            border-left-color: #f39c12;
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.15) 0%, rgba(30, 30, 50, 0.95) 100%);
+        }
+
+        .result-section-5 {
+            border-left-color: #9b59b6;
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.15) 0%, rgba(30, 30, 50, 0.95) 100%);
+        }
+
+        .result-section-6 {
+            border-left-color: #e67e22;
+            background: linear-gradient(135deg, rgba(230, 126, 34, 0.15) 0%, rgba(30, 30, 50, 0.95) 100%);
+        }
+
+        .result-section-7 {
+            border-left-color: #1abc9c;
+            background: linear-gradient(135deg, rgba(26, 188, 156, 0.15) 0%, rgba(30, 30, 50, 0.95) 100%);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #8a2be2;
+        }
+
+        .spinner {
+            border: 3px solid rgba(138, 43, 226, 0.2);
+            border-top: 3px solid #8a2be2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #ff6b6b;
+            background: rgba(231, 76, 60, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            text-align: center;
+        }
+
+        .bazi-display {
+            font-size: 24px;
+            font-weight: 700;
+            color: #8a2be2;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 八字分析结果</h1>
+            <div id="userInfo" class="user-info" style="display: none;"></div>
+            <div class="header-actions">
+                <a href="index.html" class="back-btn">← 返回重新分析</a>
+                <span id="loginBtnContainer"></span>
+                <span id="logoutBtnContainer" style="display: none;">
+                    <button class="logout-btn" onclick="handleLogout()">登出</button>
+                </span>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading analysis results...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="resultContainer" style="display: none;">
+            <!-- 结果内容将通过JavaScript动态填充 -->
+        </div>
+    </div>
+
+    <script>
+        // 从URL参数或localStorage获取数据
+        function getResultData() {
+            // 尝试从URL参数获取
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataStr = urlParams.get('data');
+            
+            if (dataStr) {
+                try {
+                    return JSON.parse(decodeURIComponent(dataStr));
+                } catch (e) {
+                    console.error('解析URL参数失败:', e);
+                }
+            }
+            
+            // 尝试从localStorage获取
+            const storedData = localStorage.getItem('baziResult');
+            if (storedData) {
+                try {
+                    return JSON.parse(storedData);
+                } catch (e) {
+                    console.error('解析localStorage数据失败:', e);
+                }
+            }
+            
+            return null;
+        }
+
+        // 格式化分析文本
+        function formatAnalysisText(text, nickname) {
+            if (!text) return '';
+            return text.replace(/\n/g, '<br>');
+        }
+
+        // 检查登录状态
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('http://localhost:5001/api/check-auth', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                return data.logged_in === true;
+            } catch (error) {
+                console.error('检查登录状态失败:', error);
+                // 如果检查失败，使用localStorage
+                return localStorage.getItem('isLoggedIn') === 'true';
+            }
+        }
+
+        // 显示结果
+        async function displayResult(data) {
+            const container = document.getElementById('resultContainer');
+            const nickname = data.nickname || '您';
+            const isLoggedIn = await checkLoginStatus();
+            let html = '';
+
+            // 八字信息板块（蓝色）- 所有人可见
+            if (data.bazi) {
+                html += `<div class="result-item result-section-1">
+                    <strong>📋 八字信息</strong>
+                    <div class="bazi-display">
+                        年柱：${data.bazi.year} | 月柱：${data.bazi.month} | 日柱：${data.bazi.day} | 时柱：${data.bazi.hour || '未知'}
+                    </div>
+                </div>`;
+            }
+
+            // 日主信息（高亮显示）- 所有人可见
+            if (data.dayMaster) {
+                html += `<div class="result-item result-section-4">
+                    <strong>🌟 日主（日柱）</strong>
+                    <div style="margin-top: 12px; font-size: 20px; font-weight: 700; color: #f39c12;">
+                        ${data.dayMaster}
+                    </div>
+                </div>`;
+            }
+
+            if (isLoggedIn) {
+                // 已登录用户 - 显示完整内容
+                
+                // Personality Analysis Section (Red)
+                if (data.personalityAnalysis) {
+                    html += `<div class="result-item result-section-2">
+                        <strong>💫 Personality Analysis</strong>
+                        <div class="result-content" style="margin-top: 12px;">
+                            ${formatAnalysisText(data.personalityAnalysis, nickname)}
+                        </div>
+                    </div>`;
+                }
+
+                // Current Situation Analysis Section (Green)
+                if (data.currentSituation) {
+                    html += `<div class="result-item result-section-3">
+                        <strong>📊 Current Situation</strong>
+                        <div class="result-content" style="margin-top: 12px;">
+                            ${formatAnalysisText(data.currentSituation, nickname)}
+                        </div>
+                    </div>`;
+                }
+
+                // Core Advice Section (Orange)
+                if (data.coreAdvice) {
+                    html += `<div class="result-item result-section-4">
+                        <strong>💡 Core Advice</strong>
+                        <div class="result-content" style="margin-top: 12px;">
+                            ${formatAnalysisText(data.coreAdvice, nickname)}
+                        </div>
+                    </div>`;
+                }
+
+                // Favorable Elements Application Section (Purple)
+                if (data.xiyongshen) {
+                    html += `<div class="result-item result-section-5">
+                        <strong>🌟 Favorable Elements</strong>
+                        <div class="result-content" style="margin-top: 12px;">
+                            ${formatAnalysisText(data.xiyongshen, nickname)}
+                        </div>
+                    </div>`;
+                }
+
+                // Things to Avoid Section (Dark Orange)
+                if (data.avoid) {
+                    html += `<div class="result-item result-section-6">
+                        <strong>⚠️ Things to Avoid</strong>
+                        <div class="result-content" style="margin-top: 12px;">
+                            ${formatAnalysisText(data.avoid, nickname)}
+                        </div>
+                    </div>`;
+                }
+
+                // Summary Section (Blue)
+                if (data.summary) {
+                    html += `<div class="result-item result-section-1">
+                        <strong>📝 Summary</strong>
+                        <div class="result-content" style="margin-top: 12px;">
+                            ${formatAnalysisText(data.summary, nickname)}
+                        </div>
+                    </div>`;
+                }
+
+                // 2026 Bingwu Year Fortune Section (Cyan)
+                if (data.yunshi2026) {
+                    html += `<div class="result-item result-section-7">
+                        <strong>🔮 2026 Bingwu Year Fortune</strong>
+                        <div class="result-content" style="margin-top: 12px;">
+                            ${formatAnalysisText(data.yunshi2026, nickname)}
+                        </div>
+                    </div>`;
+                }
+            } else {
+                // Non-logged-in users - Show restriction message
+                html += `<div class="result-item" style="border-left-color: #e74c3c; background: linear-gradient(135deg, rgba(231, 76, 60, 0.2) 0%, rgba(30, 30, 50, 0.95) 100%);">
+                    <strong>🔒 Full Report Requires Login</strong>
+                    <div class="result-content" style="margin-top: 20px; text-align: center; padding: 20px;">
+                        <p style="font-size: 18px; margin-bottom: 20px; color: #fff;">
+                            To view the complete Bazi analysis report, including personality analysis, favorable elements, 2026 fortune, and other detailed content, please log in.
+                        </p>
+                        <a href="login.html" style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: transform 0.2s;">
+                            Login to View Full Report
+                        </a>
+                        <p style="margin-top: 20px; font-size: 14px; color: #bbb;">
+                            Note: A paid account is required to log in and view the full report
+                        </p>
+                    </div>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
+        // 更新登录状态显示
+        async function updateLoginUI() {
+            const isLoggedIn = await checkLoginStatus();
+            const loginBtnContainer = document.getElementById('loginBtnContainer');
+            const logoutBtnContainer = document.getElementById('logoutBtnContainer');
+            const userInfo = document.getElementById('userInfo');
+            
+            if (isLoggedIn) {
+                loginBtnContainer.innerHTML = '';
+                logoutBtnContainer.style.display = 'inline-block';
+                const username = localStorage.getItem('username') || 'User';
+                userInfo.textContent = `Logged in: ${username}`;
+                userInfo.style.display = 'block';
+            } else {
+                loginBtnContainer.innerHTML = '<a href="login.html" class="login-btn">Login to View Full Report</a>';
+                logoutBtnContainer.style.display = 'none';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        // 处理登出
+        async function handleLogout() {
+            try {
+                await fetch('http://localhost:5001/api/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('username');
+                // 刷新页面
+                window.location.reload();
+            } catch (error) {
+                console.error('登出失败:', error);
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('username');
+                window.location.reload();
+            }
+        }
+
+        // 异步加载AI分析
+        async function loadAIAnalysis() {
+            const analysisParams = localStorage.getItem('analysisParams');
+            if (!analysisParams) {
+                return;
+            }
+            
+            try {
+                const params = JSON.parse(analysisParams);
+                
+                // Show AI analysis loading prompt
+                const container = document.getElementById('resultContainer');
+                const analysisLoadingHtml = `<div id="aiAnalysisLoading" class="result-item" style="border-left-color: #8a2be2; background: linear-gradient(135deg, rgba(138, 43, 226, 0.2) 0%, rgba(30, 30, 50, 0.95) 100%);">
+                    <strong>🤖 Generating AI Analysis...</strong>
+                    <div style="margin-top: 20px; text-align: center; padding: 20px;">
+                        <div class="spinner" style="margin: 0 auto 15px;"></div>
+                        <p style="color: #bbb; font-size: 14px;">AI is analyzing your Bazi, please wait...</p>
+                    </div>
+                </div>`;
+                container.insertAdjacentHTML('beforeend', analysisLoadingHtml);
+                
+                // 调用AI分析API
+                const response = await fetch('http://localhost:5001/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(params)
+                });
+                
+                const analysisData = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(analysisData.error || 'AI analysis failed');
+                }
+                
+                // 移除加载提示
+                const loadingEl = document.getElementById('aiAnalysisLoading');
+                if (loadingEl) {
+                    loadingEl.remove();
+                }
+                
+                // 合并数据
+                const existingData = getResultData();
+                const mergedData = {
+                    ...existingData,
+                    ...analysisData
+                };
+                
+                // 更新localStorage
+                localStorage.setItem('baziResult', JSON.stringify(mergedData));
+                localStorage.removeItem('analysisPending');
+                localStorage.removeItem('analysisParams');
+                
+                // 重新显示结果（包含AI分析）
+                await displayResult(mergedData);
+                
+            } catch (error) {
+                console.error('AI分析加载失败:', error);
+                const loadingEl = document.getElementById('aiAnalysisLoading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = `<strong>⚠️ AI Analysis Loading Failed</strong>
+                        <div style="margin-top: 20px; color: #e74c3c;">
+                            ${error.message || 'Please refresh the page and try again'}
+                        </div>`;
+                }
+            }
+        }
+
+        // 页面加载时获取并显示结果
+        window.addEventListener('DOMContentLoaded', async () => {
+            await updateLoginUI();
+            
+            const data = getResultData();
+            
+            if (data) {
+                document.getElementById('loading').style.display = 'none';
+                await displayResult(data);
+                
+                // 如果需要加载AI分析，异步加载
+                const analysisPending = localStorage.getItem('analysisPending');
+                if (analysisPending === 'true') {
+                    loadAIAnalysis();
+                }
+            } else {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = '未找到分析结果，请返回重新分析';
+            }
+        });
+    </script>
+</body>
+</html>
+
+

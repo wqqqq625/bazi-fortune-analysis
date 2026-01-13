@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bazi Fortune Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(75, 0, 130, 0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            background: rgba(30, 30, 50, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(138, 43, 226, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 30px;
+            font-size: 32px;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(138, 43, 226, 0.5);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(40, 40, 60, 0.8);
+            color: #fff;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #8a2be2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+        }
+
+        input[type="text"]::placeholder {
+            color: #999;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a2be2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+
+        select option {
+            background: rgba(40, 40, 60, 0.95);
+            color: #fff;
+            padding: 10px;
+        }
+
+        /* 下拉选择器样式 */
+        .date-select-group,
+        .time-select-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .date-select-group select,
+        .time-select-group select {
+            flex: 1;
+        }
+
+        .time-select-group span {
+            color: #8a2be2;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .optional-label {
+            color: #999;
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.6);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(40, 40, 60, 0.8);
+            border-radius: 12px;
+            display: none;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .result-container.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-title {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .result-content {
+            color: #e0e0e0;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(30, 30, 50, 0.9);
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-item strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        /* 不同板块的颜色 - 深色主题 */
+        .result-section-1 {
+            border-left-color: #3498db;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.15) 0%, rgba(30, 30, 50, 0.9) 100%);
+        }
+
+        .result-section-2 {
+            border-left-color: #e74c3c;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, rgba(30, 30, 50, 0.9) 100%);
+        }
+
+        .result-section-3 {
+            border-left-color: #2ecc71;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, rgba(30, 30, 50, 0.9) 100%);
+        }
+
+        .result-section-4 {
+            border-left-color: #f39c12;
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.15) 0%, rgba(30, 30, 50, 0.9) 100%);
+        }
+
+        .result-section-5 {
+            border-left-color: #9b59b6;
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.15) 0%, rgba(30, 30, 50, 0.9) 100%);
+        }
+
+        .result-section-6 {
+            border-left-color: #e67e22;
+            background: linear-gradient(135deg, rgba(230, 126, 34, 0.15) 0%, rgba(30, 30, 50, 0.9) 100%);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #8a2be2;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid rgba(138, 43, 226, 0.2);
+            border-top: 3px solid #8a2be2;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #ff6b6b;
+            background: rgba(231, 76, 60, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            border: 1px solid rgba(231, 76, 60, 0.5);
+        }
+
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 Bazi Fortune Analysis</h1>
+        <form id="birthForm">
+            <div class="form-group">
+                <label for="nickname">Name *</label>
+                <input type="text" id="nickname" name="nickname" placeholder="Enter your name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender *</label>
+                <select id="gender" name="gender" required>
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthDate">Date of Birth *</label>
+                <div class="date-select-group">
+                    <select id="birthYear" required>
+                        <option value="">Year</option>
+                    </select>
+                    <select id="birthMonth" required>
+                        <option value="">Month</option>
+                    </select>
+                    <select id="birthDay" required>
+                        <option value="">Day</option>
+                    </select>
+                </div>
+                <input type="hidden" id="birthDate" name="birthDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="birthTime">
+                    Time of Birth 
+                    <span class="optional-label">(Optional)</span>
+                </label>
+                <div class="time-select-group">
+                    <select id="birthHour">
+                        <option value="">Hour</option>
+                    </select>
+                    <span>:</span>
+                    <select id="birthMinute">
+                        <option value="">Min</option>
+                    </select>
+                </div>
+                <input type="hidden" id="birthTime" name="birthTime">
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">Analyze</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing, please wait...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('birthForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nickname = document.getElementById('nickname').value.trim();
+            const gender = document.getElementById('gender').value;
+            const birthDate = document.getElementById('birthDate').value;
+            const birthTime = document.getElementById('birthTime').value;
+
+            if (!nickname) {
+                showError('请输入昵称');
+                return;
+            }
+
+            if (!gender) {
+                showError('请选择性别');
+                return;
+            }
+
+            if (!birthDate) {
+                showError('请选择出生日期');
+                return;
+            }
+
+            // 显示加载状态
+            submitBtn.disabled = true;
+            loading.classList.add('show');
+            errorDiv.classList.remove('show');
+
+            try {
+                // 第一步：快速计算八字（立即返回）
+                const calculateResponse = await fetch('http://localhost:5001/api/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        nickname: nickname,
+                        birthDate: birthDate,
+                        birthTime: birthTime || null
+                    })
+                });
+
+                const calculateData = await calculateResponse.json();
+
+                if (!calculateResponse.ok) {
+                    throw new Error(calculateData.error || 'Calculation failed');
+                }
+
+                // 立即跳转到结果页面，显示八字信息
+                localStorage.setItem('baziResult', JSON.stringify(calculateData));
+                localStorage.setItem('analysisPending', 'true');
+                localStorage.setItem('analysisParams', JSON.stringify({
+                    nickname: nickname,
+                    gender: gender,
+                    birthDate: birthDate,
+                    birthTime: birthTime || null
+                }));
+                
+                const dataStr = encodeURIComponent(JSON.stringify(calculateData));
+                window.location.href = `result.html?data=${dataStr}`;
+                
+            } catch (error) {
+                showError(error.message || 'Network error, please try again');
+                submitBtn.disabled = false;
+                loading.classList.remove('show');
+            }
+        });
+
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        // 初始化下拉选择框
+        function initSelects() {
+            initDateSelects();
+            initTimeSelects();
+            updateBirthDate();
+        }
+
+        // 初始化日期选择框
+        function initDateSelects() {
+            const yearSelect = document.getElementById('birthYear');
+            const monthSelect = document.getElementById('birthMonth');
+            const daySelect = document.getElementById('birthDay');
+            const currentYear = new Date().getFullYear();
+
+            // Fill years (1900 to current year)
+            for (let year = currentYear; year >= 1900; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+
+            // Fill months (1-12)
+            for (let month = 1; month <= 12; month++) {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            }
+
+            // 初始化日期（默认31天）
+            updateDaysSelect(31);
+
+            // 监听年月变化，更新日期选项
+            yearSelect.addEventListener('change', () => {
+                const year = parseInt(yearSelect.value);
+                const month = parseInt(monthSelect.value);
+                if (year && month) {
+                    const days = getDaysInMonth(year, month);
+                    updateDaysSelect(days);
+                    updateBirthDate();
+                }
+            });
+
+            monthSelect.addEventListener('change', () => {
+                const year = parseInt(yearSelect.value);
+                const month = parseInt(monthSelect.value);
+                if (year && month) {
+                    const days = getDaysInMonth(year, month);
+                    updateDaysSelect(days);
+                    updateBirthDate();
+                }
+            });
+
+            daySelect.addEventListener('change', updateBirthDate);
+        }
+
+        // 初始化时间选择框
+        function initTimeSelects() {
+            const hourSelect = document.getElementById('birthHour');
+            const minuteSelect = document.getElementById('birthMinute');
+
+            // 填充小时（0-23）
+            for (let hour = 0; hour < 24; hour++) {
+                const option = document.createElement('option');
+                option.value = hour;
+                option.textContent = hour.toString().padStart(2, '0');
+                hourSelect.appendChild(option);
+            }
+
+            // 填充分钟（0-59，每5分钟一个）
+            for (let minute = 0; minute < 60; minute += 5) {
+                const option = document.createElement('option');
+                option.value = minute;
+                option.textContent = minute.toString().padStart(2, '0');
+                minuteSelect.appendChild(option);
+            }
+
+            // 监听时间变化
+            hourSelect.addEventListener('change', updateBirthTime);
+            minuteSelect.addEventListener('change', updateBirthTime);
+        }
+
+        // 更新日期选择框
+        function updateDaysSelect(days) {
+            const daySelect = document.getElementById('birthDay');
+            const currentValue = daySelect.value;
+            
+            daySelect.innerHTML = '<option value="">Day</option>';
+            for (let day = 1; day <= days; day++) {
+                const option = document.createElement('option');
+                option.value = day;
+                option.textContent = day;
+                daySelect.appendChild(option);
+            }
+            
+            // 如果之前选择的值仍然有效，恢复它
+            if (currentValue && parseInt(currentValue) <= days) {
+                daySelect.value = currentValue;
+            }
+        }
+
+        // 获取某年某月的天数
+        function getDaysInMonth(year, month) {
+            return new Date(year, month, 0).getDate();
+        }
+
+        // 更新隐藏的日期输入框
+        function updateBirthDate() {
+            const year = document.getElementById('birthYear').value;
+            const month = document.getElementById('birthMonth').value;
+            const day = document.getElementById('birthDay').value;
+            
+            if (year && month && day) {
+                const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                document.getElementById('birthDate').value = dateStr;
+            } else {
+                document.getElementById('birthDate').value = '';
+            }
+        }
+
+        // 更新隐藏的时间输入框
+        function updateBirthTime() {
+            const hour = document.getElementById('birthHour').value;
+            const minute = document.getElementById('birthMinute').value;
+            
+            if (hour !== '' && minute !== '') {
+                const timeStr = `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+                document.getElementById('birthTime').value = timeStr;
+            } else {
+                document.getElementById('birthTime').value = '';
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initSelects();
+        });
+    </script>
+</body>
+</html>
+
