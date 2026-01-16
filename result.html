@@ -199,13 +199,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔮 八字分析结果</h1>
+            <h1>🔮 Bazi Analysis Results</h1>
             <div id="userInfo" class="user-info" style="display: none;"></div>
             <div class="header-actions">
-                <a href="index.html" class="back-btn">← 返回重新分析</a>
+                <a href="index.html" class="back-btn">← New Analysis</a>
                 <span id="loginBtnContainer"></span>
                 <span id="logoutBtnContainer" style="display: none;">
-                    <button class="logout-btn" onclick="handleLogout()">登出</button>
+                    <button class="logout-btn" onclick="handleLogout()">Logout</button>
                 </span>
             </div>
         </div>
@@ -275,7 +275,7 @@
         // 显示结果
         async function displayResult(data) {
             const container = document.getElementById('resultContainer');
-            const nickname = data.nickname || '您';
+            const nickname = data.nickname || 'You';
             const isLoggedIn = await checkLoginStatus();
             let html = '';
 
@@ -383,7 +383,7 @@
                             💳 Unlock Full Report - $2.99
                         </a>
                         <p style="margin-top: 15px; font-size: 14px; color: #bbb;">
-                            Secure payment via Stripe • Instant access • Lifetime access to your report
+                            Secure payment via PayPal • Instant access • Lifetime access to your report
                         </p>
                         <p style="margin-top: 10px; font-size: 12px; color: #999;">
                             Already have an account? <a href="login.html" style="color: #8a2be2;">Login here</a>
@@ -410,7 +410,7 @@
                 userInfo.textContent = `Logged in: ${username}`;
                 userInfo.style.display = 'block';
             } else {
-                loginBtnContainer.innerHTML = '<a href="login.html" class="login-btn">Login to View Full Report</a>';
+                loginBtnContainer.innerHTML = '<a href="payment.html" class="login-btn">💳 Unlock Full Report - $2.99</a>';
                 logoutBtnContainer.style.display = 'none';
                 userInfo.style.display = 'none';
             }
