@@ -259,7 +259,7 @@
         // 检查登录状态
         async function checkLoginStatus() {
             try {
-                const response = await fetch('http://localhost:5001/api/check-auth', {
+                const response = await fetch('/api/check-auth', {
                     method: 'GET',
                     credentials: 'include'
                 });
@@ -416,7 +416,7 @@
         // 处理登出
         async function handleLogout() {
             try {
-                await fetch('http://localhost:5001/api/logout', {
+                await fetch('/api/logout', {
                     method: 'POST',
                     credentials: 'include'
                 });
@@ -454,7 +454,7 @@
                 container.insertAdjacentHTML('beforeend', analysisLoadingHtml);
                 
                 // 调用AI分析API
-                const response = await fetch('http://localhost:5001/api/analyze', {
+                const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -387,7 +387,7 @@
 
             try {
                 // 第一步：快速计算八字（立即返回）
-                const calculateResponse = await fetch('http://localhost:5001/api/calculate', {
+                const calculateResponse = await fetch('/api/calculate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
