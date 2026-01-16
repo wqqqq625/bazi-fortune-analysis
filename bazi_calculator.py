@@ -158,11 +158,13 @@ def analyze_with_deepseek(bazi, day_master, nickname, gender, api_key=None):
     
     try:
         from openai import OpenAI
+        import httpx
         
         # DeepSeek API 配置
         client = OpenAI(
             api_key=api_key,
-            base_url="https://api.deepseek.com"
+            base_url="https://api.deepseek.com",
+            http_client=httpx.Client()
         )
         
         # Build prompt - Request specific format analysis
@@ -325,11 +327,13 @@ def analyze_2026_yunshi(bazi, day_master, nickname, api_key=None):
     
     try:
         from openai import OpenAI
+        import httpx
         
         # DeepSeek API 配置
         client = OpenAI(
             api_key=api_key,
-            base_url="https://api.deepseek.com"
+            base_url="https://api.deepseek.com",
+            http_client=httpx.Client()
         )
         
         # Build prompt
