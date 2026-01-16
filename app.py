@@ -2,11 +2,14 @@
 Flask 后端服务器
 提供八字分析 API
 """
-from flask import Flask, request, jsonify, session, send_from_directory
+from flask import Flask, request, jsonify, session, send_from_directory, redirect, url_for
 from flask_cors import CORS
 from datetime import datetime
 import os
 import secrets
+import string
+import random
+import paypalrestsdk
 from bazi_calculator import calculate_bazi, get_day_master, analyze_with_deepseek, analyze_2026_yunshi
 
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -16,7 +19,20 @@ CORS(app, supports_credentials=True)  # 允许跨域请求和携带凭证
 # DeepSeek API Key
 DEEPSEEK_API_KEY = "sk-ce5f3d16c611492ca98a3fda8e77dc17"
 
-# 用户账户数据库（10个用户）
+# PayPal API Keys (从环境变量读取)
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID', '')
+PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET', '')
+PAYPAL_MODE = os.environ.get('PAYPAL_MODE', 'sandbox')  # 'sandbox' for testing, 'live' for production
+
+# 初始化 PayPal
+if PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET:
+    paypalrestsdk.configure({
+        "mode": PAYPAL_MODE,
+        "client_id": PAYPAL_CLIENT_ID,
+        "client_secret": PAYPAL_CLIENT_SECRET
+    })
+
+# 用户账户数据库（10个用户 + 动态添加的付费用户）
 USERS = {
     'user001': 'pass001',
     'user002': 'pass002',
@@ -176,6 +192,116 @@ def check_auth():
         })
     else:
         return jsonify({'logged_in': False})
+
+@app.route('/api/create-payment', methods=['POST'])
+def create_payment():
+    """创建 PayPal 支付"""
+    try:
+        if not PAYPAL_CLIENT_ID or not PAYPAL_CLIENT_SECRET:
+            return jsonify({'error': 'PayPal is not configured. Please set PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET environment variables.'}), 500
+        
+        data = request.get_json()
+        nickname = data.get('nickname', 'User')
+        
+        # 创建 PayPal 支付
+        payment = paypalrestsdk.Payment({
+            "intent": "sale",
+            "payer": {
+                "payment_method": "paypal"
+            },
+            "redirect_urls": {
+                "return_url": request.host_url.rstrip('/') + '/payment-success',
+                "cancel_url": request.host_url.rstrip('/') + '/payment.html?canceled=true'
+            },
+            "transactions": [{
+                "item_list": {
+                    "items": [{
+                        "name": "Bazi Fortune Analysis - Full Report",
+                        "description": f"Complete Bazi analysis report for {nickname}",
+                        "quantity": "1",
+                        "price": "2.99",
+                        "currency": "USD"
+                    }]
+                },
+                "amount": {
+                    "total": "2.99",
+                    "currency": "USD"
+                },
+                "description": f"Bazi Fortune Analysis Full Report for {nickname}"
+            }]
+        })
+        
+        if payment.create():
+            # 获取支付链接
+            for link in payment.links:
+                if link.rel == "approval_url":
+                    approval_url = link.href
+                    return jsonify({
+                        'paymentId': payment.id,
+                        'approvalUrl': approval_url
+                    })
+            return jsonify({'error': 'Failed to get approval URL'}), 500
+        else:
+            return jsonify({'error': payment.error}), 500
+        
+    except Exception as e:
+        print(f"PayPal error: {e}")
+        return jsonify({'error': f'Payment processing failed: {str(e)}'}), 500
+
+@app.route('/payment-success')
+def payment_success():
+    """支付成功页面"""
+    payment_id = request.args.get('paymentId')
+    payer_id = request.args.get('PayerID')
+    
+    try:
+        if not payment_id or not payer_id:
+            base_url = request.host_url.rstrip('/')
+            return redirect(f'{base_url}/payment.html?error=missing_parameters')
+        
+        if not PAYPAL_CLIENT_ID or not PAYPAL_CLIENT_SECRET:
+            base_url = request.host_url.rstrip('/')
+            return redirect(f'{base_url}/payment.html?error=paypal_not_configured')
+        
+        # 获取支付信息
+        payment = paypalrestsdk.Payment.find(payment_id)
+        
+        # 执行支付
+        if payment.execute({"payer_id": payer_id}):
+            # 支付成功，创建账号
+            # 从支付描述中获取 nickname（或者从 session 中获取）
+            nickname = 'User'
+            try:
+                # 尝试从交易描述中提取
+                if payment.transactions and len(payment.transactions) > 0:
+                    description = payment.transactions[0].description or ''
+                    if 'for ' in description:
+                        nickname = description.split('for ')[-1]
+            except:
+                pass
+            
+            # 生成随机用户名和密码
+            username = 'user_' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+            password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+            
+            # 保存到用户数据库
+            USERS[username] = password
+            
+            # 自动登录
+            session['username'] = username
+            session['logged_in'] = True
+            
+            # 重定向到结果页面
+            base_url = request.host_url.rstrip('/')
+            return redirect(f'{base_url}/result.html?payment=success&username={username}&password={password}')
+        else:
+            base_url = request.host_url.rstrip('/')
+            return redirect(f'{base_url}/payment.html?error=payment_execution_failed')
+            
+    except Exception as e:
+        print(f"Payment verification error: {e}")
+        base_url = request.host_url.rstrip('/')
+        return redirect(f'{base_url}/payment.html?error=verification_failed')
 
 @app.route('/health', methods=['GET'])
 def health():

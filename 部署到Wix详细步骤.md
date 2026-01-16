@@ -38,7 +38,7 @@
    - **Branch**: `main`（或你的主分支）
    - **Root Directory**: 留空（如果代码在根目录）
    - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn app:app --host 0.0.0.0 --port $PORT`
+      - **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT`
 
 4. **设置环境变量**
    - 点击 "Environment" 标签

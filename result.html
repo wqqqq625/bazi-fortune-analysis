@@ -372,18 +372,21 @@
                     </div>`;
                 }
             } else {
-                // Non-logged-in users - Show restriction message
+                // Non-logged-in users - Show payment option
                 html += `<div class="result-item" style="border-left-color: #e74c3c; background: linear-gradient(135deg, rgba(231, 76, 60, 0.2) 0%, rgba(30, 30, 50, 0.95) 100%);">
-                    <strong>🔒 Full Report Requires Login</strong>
+                    <strong>🔒 Unlock Full Report</strong>
                     <div class="result-content" style="margin-top: 20px; text-align: center; padding: 20px;">
                         <p style="font-size: 18px; margin-bottom: 20px; color: #fff;">
-                            To view the complete Bazi analysis report, including personality analysis, favorable elements, 2026 fortune, and other detailed content, please log in.
+                            To view the complete Bazi analysis report, including personality analysis, favorable elements, 2026 fortune, and other detailed content, unlock your full report for just $2.99.
                         </p>
-                        <a href="login.html" style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: transform 0.2s;">
-                            Login to View Full Report
+                        <a href="payment.html" style="display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%); color: white; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: 600; box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4); transition: transform 0.2s; margin-bottom: 10px;">
+                            💳 Unlock Full Report - $2.99
                         </a>
-                        <p style="margin-top: 20px; font-size: 14px; color: #bbb;">
-                            Note: A paid account is required to log in and view the full report
+                        <p style="margin-top: 15px; font-size: 14px; color: #bbb;">
+                            Secure payment via Stripe • Instant access • Lifetime access to your report
+                        </p>
+                        <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                            Already have an account? <a href="login.html" style="color: #8a2be2;">Login here</a>
                         </p>
                     </div>
                 </div>`;
